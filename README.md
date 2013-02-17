@@ -34,4 +34,4 @@ February 2013,78.75
 January 2013,24.68
 </pre>
 
-I can then make pretty picture that show my slow decent into alcoholism 
+I can then make pretty graph showing my slow decent into alcoholism 
