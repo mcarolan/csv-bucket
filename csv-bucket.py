@@ -5,6 +5,7 @@ import csv
 import calendar
 import datetime
 from decimal import Decimal
+from decimal import InvalidOperation
 
 #credit to http://stackoverflow.com/questions/6556078/how-to-read-a-csv-file-from-a-stream-and-process-each-line-as-it-is-written
 class ReadlineIterator:
@@ -70,8 +71,8 @@ parser.add_option("-d", "--date-column", default=0, type="int", help="Column num
 parser.add_option("-v", "--value-column", default=2, type="int", help="Column number in which the values to be aggregated are stored. Zero indexed. Default is 2.")
 parser.add_option("-f", "--date-format", default="%Y-%m-%d", help="Date format. Default is %Y-%m-%d. Information at http://docs.python.org/2/library/datetime.html#strftime-strptime-behavior")
 parser.add_option("-n", action="store_false", dest="skip_header", help="No header - the first row of data will not be skipped", default=True)
-parser.add_option("-b", "--begin-date", default="1900-01-01", help="The date of which filtering should begin at. This is in the same format as provided to --date-format. Default is 1900-01-01")
-parser.add_option("-e", "--end-date", default="3000-01-01", help="The date of which filtering should end at. This is in the same format as provided to --date-format. Default is 3000-01-01")
+parser.add_option("-b", "--begin-date", default="1900-01-01", help="The date of which filtering should begin at (inclusive). This is in the same format as provided to --date-format. Default is 1900-01-01")
+parser.add_option("-e", "--end-date", default="3000-01-01", help="The date of which filtering should end at (exclusive). This is in the same format as provided to --date-format. Default is 3000-01-01")
 
 (options, args) = parser.parse_args()
 
@@ -88,6 +89,8 @@ else:
 data = []
 reader = csv.reader(ReadlineIterator(sys.stdin))
 firstRow = True
+rowNumber = 1
+
 for row in reader:
 	if firstRow and options.skip_header:
 		firstRow = False
@@ -102,10 +105,18 @@ for row in reader:
 	if options.value_column >= numberOfColumns:
 		fail("Value column out of range in data, value column is %d, there are %d columns" % (options.value_column, numberOfColumns))
 
-	date = datetime.datetime.strptime(row[options.date_column], options.date_format)
-	value = Decimal(row[options.value_column])
+	try:
+		date = datetime.datetime.strptime(row[options.date_column], options.date_format)
+	except ValueError:
+		fail("Could not parse %s as a date, at row %d" % (row[options.date_column], rowNumber))
+
+	try:
+		value = Decimal(row[options.value_column])
+	except InvalidOperation:
+		fail("Could not parse %s as a value, at row %d" % (row[options.value_column], rowNumber))
 
 	data.append((date, value))
+	rowNumber += 1
 
 #filter!
 beginDate = datetime.datetime.strptime(options.begin_date, options.date_format)
