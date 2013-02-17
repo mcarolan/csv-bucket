@@ -5,12 +5,14 @@ Aggregate a column of data in a CSV file over certain time buckets.
 
 I'm using this to track what I spend. I get a CSV dump of my spend from an app called toshl, tagged like so:
 
+<pre>
 "Date","Entry (tags)","Expense amount","Currency","Description"
 "2013-02-17","insurance","9.99","GBP",""
 "2013-02-17","coke","1.5","GBP",""
 "2013-02-16","booze","3.6","GBP",""
 "2013-02-16","booze","3.6","GBP",""
 ...
+</pre>
 
 I can then use csv-bucket to aggregate this data over calendar weeks or months. E.g.
 
